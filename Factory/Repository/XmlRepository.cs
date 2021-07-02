@@ -1,63 +1,98 @@
 ﻿using Factory.Model;
 using System;
-using System.Collections.Generic;
-using System.Text;
+using System.IO;
+using System.Xml;
 
 namespace Factory.Repository
 {
-    public class XmlRepository : IRepository
+    public class XmlRepository
     {
-        public List<Vehicle> VehicleList;
+        private VehicleRepository _vehicleRepo;
+        private XmlDocument xmlDoc;
+        private string xmlPath;
+        public VehicleRepository Vehicle { get { return this._vehicleRepo; } }
 
         public XmlRepository()
         {
-            this.VehicleList = new List<Vehicle>();
+            this.xmlPath = System.Reflection.Assembly.GetExecutingAssembly().Location + "../../../../../vehicle.xml";
+            this._vehicleRepo = VehicleRepository.Instance;
+            this.xmlDoc = new XmlDocument();
+            this.xmlDoc.Load(this.xmlPath);
+            this.RemoveAllVehicle();
+            this.xmlDoc.Save(this.xmlPath);
+            this.PopulateInMemoryVehicle();
         }
-        public Vehicle Create(string Name, VehicleType Type)
+
+        public XmlRepository(string xmlPath)
         {
-            switch (Type)
+            this._vehicleRepo = VehicleRepository.Instance;
+            this.xmlPath = xmlPath;
+            this.xmlDoc = new XmlDocument();
+            this.xmlDoc.Load(xmlPath);
+            this.RemoveAllVehicle();
+            this.xmlDoc.Save(this.xmlPath);
+            this.PopulateInMemoryVehicle();
+
+        }
+
+        private void PopulateInMemoryVehicle()
+        {
+            XmlNodeList vehicleNodes = this.xmlDoc.GetElementsByTagName("vehicle");
+
+            foreach (XmlNode node in vehicleNodes)
             {
-                case VehicleType.Car:
-                    {
-                        Vehicle newVehicle = new Car(Name, Type);
-                        this.VehicleList.Add(newVehicle);
-                        return newVehicle;
-                    }
-                case VehicleType.Truck:
-                    {
-                        Vehicle newVehicle = new Truck(Name, Type);
-                        this.VehicleList.Add(newVehicle);
-                        return newVehicle;
-                    }
-                case VehicleType.Motorcycle:
-                    {
-                        Vehicle newVehicle = new Motorcycle(Name, Type);
-                        this.VehicleList.Add(newVehicle);
-                        return newVehicle;
-                    }
-                default:
-                    {
-                        throw new NotImplementedException();
-                    }
+                string Name = node.InnerText;
+                string AttrType = node.Attributes.GetNamedItem("type").InnerText;
+                int Id = Int32.Parse(node.Attributes.GetNamedItem("id").InnerText);
+                VehicleType Type = GetVehicleType(AttrType);
+                this._vehicleRepo.Create(Name, Type, Id);
             }
         }
 
-        public List<Vehicle> Get()
+        private void RemoveAllVehicle()
         {
-            throw new NotImplementedException();
-            //return this.VehicleList;
+            XmlNodeList vehicleNodes = this.xmlDoc.GetElementsByTagName("vehicle");
+            if (vehicleNodes.Count > 0)
+            {
+                vehicleNodes.Item(0).ParentNode.RemoveChild(vehicleNodes.Item(0));
+                RemoveAllVehicle();
+            }
         }
 
-        public List<Vehicle> Get(string Name)
+        public Vehicle CreateVehicle(string Name, VehicleType Type)
         {
-            throw new NotImplementedException();
-            //return this.VehicleList.FindAll(v => v.Name == Name);
+            XmlNodeList vehicleNodes = this.xmlDoc.GetElementsByTagName("vehicle");
+            int Id = vehicleNodes.Count + 1;
+            XmlElement vehicle = this.xmlDoc.CreateElement("vehicle");
+            vehicle.SetAttribute("id", Id.ToString());
+            vehicle.SetAttribute("type", Type.ToString());
+            vehicle.InnerText = Name;
+
+            XmlNodeList vehicles = this.xmlDoc.GetElementsByTagName("vehicles");
+            vehicles.Item(0).AppendChild(vehicle);
+            this.xmlDoc.Save(this.xmlPath);
+
+            return this._vehicleRepo.Create(Name, Type, Id);
         }
 
-        public List<Vehicle> Get(VehicleType Type)
+        private VehicleType GetVehicleType(string Type)
         {
-            throw new NotImplementedException();
-            //return this.VehicleList.FindAll(v => v.Type == Type);
+            if (Type == VehicleType.Car.ToString())
+            {
+                return VehicleType.Car;
+            }
+            else if (Type == VehicleType.Motorcycle.ToString())
+            {
+                return VehicleType.Car;
+            }
+            else if (Type == VehicleType.Truck.ToString())
+            {
+                return VehicleType.Car;
+            }
+            else
+            {
+                return VehicleType.Uknown;
+            }
         }
     }
 }

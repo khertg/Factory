@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Factory.Repository;
+using System;
+using System.IO;
+using System.Xml;
 
 namespace Factory
 {
@@ -6,7 +9,11 @@ namespace Factory
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            string path = System.Reflection.Assembly.GetExecutingAssembly().Location + "../../../../../vehicle.xml";
+            Console.WriteLine(path);
+            XmlDocument xmlDoc = new XmlDocument();
+            xmlDoc.Load(path);
+            Console.WriteLine(System.Reflection.Assembly.GetExecutingAssembly().Location);
         }
     }
 }

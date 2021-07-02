@@ -2,6 +2,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Factory;
 using System.Linq;
 using Factory.Repository;
+using System;
 
 namespace Unit_Test
 {
@@ -13,7 +14,8 @@ namespace Unit_Test
         [TestInitialize]
         public void Init()
         {
-            factory = new VehicleFactory(new XmlRepository());
+            string xmlPath = AppDomain.CurrentDomain.BaseDirectory + "../../../../vehicle.xml";
+            factory = new VehicleFactory(new XmlRepository(xmlPath));
         }
         [TestMethod]
         public void ShouldCreateANewCar()

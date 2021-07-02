@@ -6,6 +6,6 @@ namespace Factory
 {
     public enum VehicleType
     {
-        Car, Motorcycle, Truck
+        Car, Motorcycle, Truck, Uknown
     }
 }

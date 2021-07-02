@@ -10,6 +10,6 @@ namespace Factory.Repository
         public List<Vehicle> Get();
         public List<Vehicle> Get(string Name);
         public List<Vehicle> Get(VehicleType Type);
-        public Vehicle Create(string Name, VehicleType Type);
+        public Vehicle Create(string Name, VehicleType Type, int Id = 0);
     }
 }
